@@ -4,7 +4,7 @@ import { useRef, useState, useTransition } from "react";
 import { recordOrder } from "@/app/actions";
 import { LoadingOverlay } from "./LoadingOverlay";
 import {
-  PLATFORM_LABEL, calcBreakdown, formatSen, parseKmTenths, parseToSen, senPerKm,
+  EXTRA_PLATFORMS, PLATFORM_LABEL, calcBreakdown, formatSen, parseKmTenths, parseOptionalSen, parseToSen, senPerKm,
   type OrderStatus, type Platform,
 } from "@/lib/money";
 
@@ -16,6 +16,7 @@ const PLATFORM_STYLE: Record<Platform, string> = {
 export function OrderForm() {
   const [platform, setPlatform] = useState<Platform>("grab");
   const [amount, setAmount] = useState("");
+  const [extra, setExtra] = useState("");
   const [note, setNote] = useState("");
   const [km, setKm] = useState("");
   const [flash, setFlash] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
@@ -24,7 +25,9 @@ export function OrderForm() {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const sen = parseToSen(amount);
-  const b = sen ? calcBreakdown(sen, platform) : null;
+  const hasExtra = EXTRA_PLATFORMS.includes(platform);
+  const extraSen = hasExtra ? parseOptionalSen(extra) : 0;
+  const b = sen && extraSen !== null ? calcBreakdown(sen, platform, extraSen) : null;
   const kmTenths = parseKmTenths(km);
   const perKm = b && kmTenths ? senPerKm(b.netSen, kmTenths) : null;
   const valid = !!b && kmTenths !== null;
@@ -33,13 +36,14 @@ export function OrderForm() {
     if (!b || kmTenths === null) return;
     setBusyLabel(status === "accepted" ? "Accepting order…" : "Rejecting order…");
     startTransition(async () => {
-      const res = await recordOrder({ platform, amount, status, distanceKm: km, note });
+      const res = await recordOrder({ platform, amount, extraAmount: hasExtra ? extra : "", status, distanceKm: km, note });
       if (res.ok) {
         setFlash({
           kind: "ok",
           text: status === "accepted" ? `✅ Accepted: ${formatSen(b.netSen)}` : `❌ Rejected: ${formatSen(b.netSen)}`,
         });
         setAmount("");
+        setExtra("");
         setNote("");
         setKm("");
         inputRef.current?.focus();
@@ -60,7 +64,7 @@ export function OrderForm() {
         ))}
       </div>
 
-      <label className="mt-4 block text-sm text-zinc-500">Order amount ({PLATFORM_LABEL[platform]})</label>
+      <label className="mt-4 block text-sm text-zinc-500">{hasExtra ? "Order fare" : "Order amount"} ({PLATFORM_LABEL[platform]})</label>
       <div className="mt-1 flex items-center rounded-xl border border-zinc-300 px-4 focus-within:ring-2 focus-within:ring-zinc-400 dark:border-zinc-700">
         <span className="font-semibold text-zinc-400">RM</span>
         <input ref={inputRef} value={amount} onChange={(e) => { setAmount(e.target.value); setFlash(null); }}
@@ -68,6 +72,19 @@ export function OrderForm() {
           className="w-full bg-transparent px-2 py-3 text-3xl font-bold tabular-nums outline-none" />
       </div>
       {amount && !sen && <p className="mt-1 text-sm text-red-600">Enter a valid amount, e.g. 12.50</p>}
+
+      {hasExtra && (
+        <>
+          <label className="mt-3 block text-sm text-zinc-500">Extra money — optional (tips, incentives)</label>
+          <div className="mt-1 flex items-center rounded-xl border border-zinc-300 px-4 focus-within:ring-2 focus-within:ring-zinc-400 dark:border-zinc-700">
+            <span className="font-semibold text-zinc-400">+ RM</span>
+            <input value={extra} onChange={(e) => { setExtra(e.target.value); setFlash(null); }}
+              inputMode="decimal" placeholder="0.00"
+              className="w-full bg-transparent px-2 py-2 text-xl font-semibold tabular-nums outline-none" />
+          </div>
+          {extraSen === null && <p className="mt-1 text-sm text-red-600">Enter a valid extra amount, or leave it empty</p>}
+        </>
+      )}
 
       <label className="mt-3 block text-sm text-zinc-500">Distance (km) — optional, used for RM/km</label>
       <div className="mt-1 flex items-center rounded-xl border border-zinc-300 px-4 dark:border-zinc-700">
@@ -78,7 +95,10 @@ export function OrderForm() {
       {kmTenths === null && <p className="mt-1 text-sm text-red-600">Invalid distance (max 1 decimal place)</p>}
 
       <div className="mt-4 space-y-1 rounded-xl bg-zinc-50 p-3 text-sm tabular-nums dark:bg-zinc-800/50">
-        <Row label="Amount" value={b ? formatSen(b.grossSen) : "—"} />
+        <Row label={hasExtra ? "Order fare" : "Amount"} value={b ? formatSen(b.grossSen) : "—"} />
+        {hasExtra && b && b.extraSen > 0 && (
+          <Row label="Extra" value={`+ ${formatSen(b.extraSen)}`} className="text-emerald-600" />
+        )}
         {platform === "lalamove" && (
           <Row label={`Commission ${b?.ratePct ?? 21}%`} value={b ? `- ${formatSen(b.commissionSen)}` : "—"} className="text-red-600" />
         )}

@@ -18,8 +18,9 @@ Estimated time: 15 minutes. Everything is free (Supabase Free + Vercel Hobby).
 1. Left menu: **SQL Editor**, then **New query**.
 2. Open [`supabase/migrations/0001_init.sql`](../supabase/migrations/0001_init.sql) on GitHub, copy everything, paste, and click **Run**.
    You should see `Success. No rows returned`.
-3. Repeat with [`supabase/migrations/0002_distance_expenses.sql`](../supabase/migrations/0002_distance_expenses.sql).
-   > ⚠️ Order matters: 0001 first, then 0002. Run each file **once** only.
+3. Repeat with [`supabase/migrations/0002_distance_expenses.sql`](../supabase/migrations/0002_distance_expenses.sql),
+   then [`supabase/migrations/0003_extra_amount.sql`](../supabase/migrations/0003_extra_amount.sql).
+   > ⚠️ Order matters: 0001 → 0002 → 0003. Run each file **once** only.
 4. Check: **Table Editor** should list `orders` and `expenses`, both marked 🔒 RLS enabled.
 
 ### A3. Login settings
@@ -108,6 +109,7 @@ npm run dev                  # open http://localhost:3000
 | "Setup incomplete" page | Env vars missing/wrong in Vercel. The page lists what's wrong. Fix it in B2, then **Redeploy**. |
 | `relation "orders" does not exist` | Migrations haven't been run (A2). |
 | `column orders.distance_km does not exist` | Migration `0002` hasn't been run. |
+| `column orders.extra_amount does not exist` | Migration `0003` hasn't been run. |
 | `Email not confirmed` | Turn OFF *Confirm email* (A3) and either click the email link, or run in SQL Editor: `update auth.users set email_confirmed_at = now() where email = 'you@example.com';` |
 | Email link goes to localhost | Site URL not updated (C1). |
 | `new row violates row-level security policy` | You're not signed in / session expired. Sign out and back in. |

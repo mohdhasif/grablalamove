@@ -15,6 +15,9 @@ export const PLATFORM_LABEL: Record<Platform, string> = {
   lalamove: "Lalamove",
 };
 
+/** Platforms where an optional extra amount (tips/incentives) can be entered. */
+export const EXTRA_PLATFORMS: Platform[] = ["grab"];
+
 /** "12.5" / "12,50" / "RM 12.50" -> 1250 sen. Returns null if invalid. */
 export function parseToSen(input: string): number | null {
   const cleaned = input.replace(/rm/i, "").replace(/\s/g, "").replace(",", ".");
@@ -24,14 +27,21 @@ export function parseToSen(input: string): number | null {
   return sen > 0 ? sen : null;
 }
 
-export function calcBreakdown(grossSen: number, platform: Platform) {
+/** Like parseToSen, but empty input means 0 (for optional fields). */
+export function parseOptionalSen(input: string): number | null {
+  return input.trim() === "" ? 0 : parseToSen(input);
+}
+
+/** grossSen = order fare; extraSen = optional extra (not subject to commission). */
+export function calcBreakdown(grossSen: number, platform: Platform, extraSen = 0) {
   const bps = COMMISSION_BPS[platform];
   // Round half up (same as Postgres round() for positive numbers)
   const commissionSen = Math.round((grossSen * bps) / 10000);
   return {
     grossSen,
     commissionSen,
-    netSen: grossSen - commissionSen,
+    extraSen,
+    netSen: grossSen - commissionSen + extraSen,
     ratePct: bps / 100,
   };
 }
