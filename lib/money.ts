@@ -1,10 +1,10 @@
-// Semua kiraan wang dibuat dalam SEN (integer) untuk elak ralat floating point.
-// Logik ini mesti sama dengan generated column dalam supabase/migrations/0001_init.sql.
+// All money math is done in SEN (integer cents) to avoid floating point errors.
+// This logic must match the generated columns in supabase/migrations/0001_init.sql.
 
 export type Platform = "grab" | "lalamove";
 export type OrderStatus = "accepted" | "rejected";
 
-/** Kadar potongan dalam basis points (2100 = 21%). Tukar di sini jika kadar berubah. */
+/** Commission rate in basis points (2100 = 21%). Change it here if the rate changes. */
 export const COMMISSION_BPS: Record<Platform, number> = {
   grab: 0,
   lalamove: 2100,
@@ -15,7 +15,7 @@ export const PLATFORM_LABEL: Record<Platform, string> = {
   lalamove: "Lalamove",
 };
 
-/** "12.5" / "12,50" / "RM 12.50" -> 1250 sen. Pulangkan null jika tidak sah. */
+/** "12.5" / "12,50" / "RM 12.50" -> 1250 sen. Returns null if invalid. */
 export function parseToSen(input: string): number | null {
   const cleaned = input.replace(/rm/i, "").replace(/\s/g, "").replace(",", ".");
   if (!/^\d{1,5}(\.\d{0,2})?$/.test(cleaned)) return null;
@@ -26,7 +26,7 @@ export function parseToSen(input: string): number | null {
 
 export function calcBreakdown(grossSen: number, platform: Platform) {
   const bps = COMMISSION_BPS[platform];
-  // Bundar separuh ke atas (sama seperti round() Postgres untuk nombor positif)
+  // Round half up (same as Postgres round() for positive numbers)
   const commissionSen = Math.round((grossSen * bps) / 10000);
   return {
     grossSen,
@@ -36,13 +36,13 @@ export function calcBreakdown(grossSen: number, platform: Platform) {
   };
 }
 
-const fmt = new Intl.NumberFormat("ms-MY", { style: "currency", currency: "MYR" });
+const fmt = new Intl.NumberFormat("en-MY", { style: "currency", currency: "MYR" });
 
 export function formatSen(sen: number): string {
   return fmt.format(sen / 100);
 }
 
-/** Nilai numeric dari Postgres (string "12.34" atau number) -> sen */
+/** Postgres numeric value (string "12.34" or number) -> sen */
 export function dbToSen(v: string | number): number {
   return Math.round(Number(v) * 100);
 }
@@ -58,14 +58,14 @@ export function bpsToRate(bps: number): string {
 export type ExpenseCategory = "fuel" | "toll" | "parking" | "maintenance" | "other";
 
 export const EXPENSE_LABEL: Record<ExpenseCategory, string> = {
-  fuel: "⛽ Minyak",
-  toll: "🛣️ Tol",
+  fuel: "⛽ Fuel",
+  toll: "🛣️ Toll",
   parking: "🅿️ Parking",
-  maintenance: "🔧 Servis",
-  other: "📦 Lain-lain",
+  maintenance: "🔧 Service",
+  other: "📦 Other",
 };
 
-/** "12.5" / "12,5" -> 125 (dalam 0.1 km). Kosong -> undefined, tidak sah -> null. */
+/** "12.5" / "12,5" -> 125 (in 0.1 km units). Empty -> undefined, invalid -> null. */
 export function parseKmTenths(input: string): number | null | undefined {
   const cleaned = input.replace(/km/i, "").replace(/\s/g, "").replace(",", ".");
   if (cleaned === "") return undefined;
@@ -75,7 +75,7 @@ export function parseKmTenths(input: string): number | null | undefined {
   return tenths > 0 ? tenths : null;
 }
 
-/** RM per km dalam sen (dibundarkan), atau null jika tiada jarak. */
+/** RM per km in sen (rounded), or null when there is no distance. */
 export function senPerKm(netSen: number, kmTenths: number): number | null {
   return kmTenths > 0 ? Math.round((netSen * 10) / kmTenths) : null;
 }

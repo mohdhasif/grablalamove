@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
-// Pautan pengesahan email Supabase akan kembali ke sini dengan ?code=
+// Supabase email confirmation links return here with ?code=
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
@@ -10,5 +10,5 @@ export async function GET(request: Request) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) return NextResponse.redirect(`${origin}/`);
   }
-  return NextResponse.redirect(`${origin}/login?error=Pautan+tidak+sah+atau+tamat+tempoh`);
+  return NextResponse.redirect(`${origin}/login?error=Invalid+or+expired+link`);
 }

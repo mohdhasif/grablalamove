@@ -9,7 +9,7 @@ export type Order = {
   commissionSen: number;
   netSen: number;
   ratePct: number;
-  /** jarak dalam 0.1 km, null jika tidak diisi */
+  /** distance in 0.1 km units, null when not entered */
   kmTenths: number | null;
   status: OrderStatus;
   note: string | null;
@@ -78,7 +78,7 @@ export function summarize(orders: Order[], expenses: Expense[] = []) {
     const xs = accepted.filter((o) => o.platform === p);
     return { count: xs.length, netSen: sum(xs, "netSen") };
   };
-  // RM/km hanya dari order yang ada jarak, supaya tak tercemar order tanpa km.
+  // RM/km only uses orders with a distance, so orders without km do not skew it.
   const withKm = accepted.filter((o) => o.kmTenths);
   const kmTenths = withKm.reduce((a, o) => a + (o.kmTenths ?? 0), 0);
   const netSen = sum(accepted, "netSen");

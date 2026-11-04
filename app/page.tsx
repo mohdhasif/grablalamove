@@ -11,16 +11,16 @@ export default async function Home() {
   return (
     <main className="mx-auto flex max-w-md flex-col gap-4 p-4 pb-10">
       <Nav />
-      <Summary s={summarize(orders, expenses)} title="Hari ini" />
+      <Summary s={summarize(orders, expenses)} title="Today" />
       <OrderForm />
       <ExpenseForm />
       <section>
-        <h2 className="mb-1 text-sm font-semibold text-zinc-500">Order hari ini</h2>
+        <h2 className="mb-1 text-sm font-semibold text-zinc-500">Today's orders</h2>
         <OrderList orders={orders} />
       </section>
       {expenses.length > 0 && (
         <section>
-          <h2 className="mb-1 text-sm font-semibold text-zinc-500">Kos hari ini</h2>
+          <h2 className="mb-1 text-sm font-semibold text-zinc-500">Today's expenses</h2>
           <ExpenseList expenses={expenses} />
         </section>
       )}

@@ -26,7 +26,7 @@ export async function signUp(formData: FormData) {
     options: { emailRedirectTo: `${origin}/auth/callback` },
   });
   if (error) redirect(`/login?error=${encodeURIComponent(error.message)}`);
-  if (!data.session) redirect("/login?message=Semak+email+untuk+sahkan+akaun");
+  if (!data.session) redirect("/login?message=Check+your+email+to+confirm+your+account");
   redirect("/");
 }
 

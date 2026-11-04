@@ -7,7 +7,7 @@ const PUBLIC_PATHS = ["/login", "/auth"];
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Env salah/tiada: tunjuk halaman panduan dan bukan 500 kosong.
+  // Missing/invalid env: show a setup guide instead of a blank 500.
   const env = getSupabaseEnv();
   if (!env.ok) {
     if (pathname === "/setup") return NextResponse.next();

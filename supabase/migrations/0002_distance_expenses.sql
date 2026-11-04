@@ -1,4 +1,4 @@
--- Fasa 2: jarak per order (untuk RM/km) + rekod kos (minyak, tol, parking, dll)
+-- Phase 2: per-order distance (for RM/km) + expenses (fuel, toll, parking, etc.)
 
 alter table public.orders
   add column distance_km numeric(6, 1) check (distance_km > 0 and distance_km < 1000);

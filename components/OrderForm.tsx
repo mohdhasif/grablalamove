@@ -34,7 +34,7 @@ export function OrderForm() {
       if (res.ok) {
         setFlash({
           kind: "ok",
-          text: status === "accepted" ? `✅ Diterima: ${formatSen(b.netSen)}` : `❌ Ditolak: ${formatSen(b.netSen)}`,
+          text: status === "accepted" ? `✅ Accepted: ${formatSen(b.netSen)}` : `❌ Rejected: ${formatSen(b.netSen)}`,
         });
         setAmount("");
         setNote("");
@@ -57,36 +57,36 @@ export function OrderForm() {
         ))}
       </div>
 
-      <label className="mt-4 block text-sm text-zinc-500">Amaun order ({PLATFORM_LABEL[platform]})</label>
+      <label className="mt-4 block text-sm text-zinc-500">Order amount ({PLATFORM_LABEL[platform]})</label>
       <div className="mt-1 flex items-center rounded-xl border border-zinc-300 px-4 focus-within:ring-2 focus-within:ring-zinc-400 dark:border-zinc-700">
         <span className="font-semibold text-zinc-400">RM</span>
         <input ref={inputRef} value={amount} onChange={(e) => { setAmount(e.target.value); setFlash(null); }}
           inputMode="decimal" placeholder="0.00" autoFocus
           className="w-full bg-transparent px-2 py-3 text-3xl font-bold tabular-nums outline-none" />
       </div>
-      {amount && !sen && <p className="mt-1 text-sm text-red-600">Masukkan amaun yang sah, cth 12.50</p>}
+      {amount && !sen && <p className="mt-1 text-sm text-red-600">Enter a valid amount, e.g. 12.50</p>}
 
-      <label className="mt-3 block text-sm text-zinc-500">Jarak (km) — pilihan, untuk kira RM/km</label>
+      <label className="mt-3 block text-sm text-zinc-500">Distance (km) — optional, used for RM/km</label>
       <div className="mt-1 flex items-center rounded-xl border border-zinc-300 px-4 dark:border-zinc-700">
-        <input value={km} onChange={(e) => setKm(e.target.value)} inputMode="decimal" placeholder="cth 8.5"
+        <input value={km} onChange={(e) => setKm(e.target.value)} inputMode="decimal" placeholder="e.g. 8.5"
           className="w-full bg-transparent py-2 text-lg tabular-nums outline-none" />
         <span className="text-sm text-zinc-400">km</span>
       </div>
-      {kmTenths === null && <p className="mt-1 text-sm text-red-600">Jarak tidak sah (maks 1 titik perpuluhan)</p>}
+      {kmTenths === null && <p className="mt-1 text-sm text-red-600">Invalid distance (max 1 decimal place)</p>}
 
       <div className="mt-4 space-y-1 rounded-xl bg-zinc-50 p-3 text-sm tabular-nums dark:bg-zinc-800/50">
-        <Row label="Jumlah" value={b ? formatSen(b.grossSen) : "—"} />
+        <Row label="Amount" value={b ? formatSen(b.grossSen) : "—"} />
         {platform === "lalamove" && (
-          <Row label={`Potongan ${b?.ratePct ?? 21}%`} value={b ? `- ${formatSen(b.commissionSen)}` : "—"} className="text-red-600" />
+          <Row label={`Commission ${b?.ratePct ?? 21}%`} value={b ? `- ${formatSen(b.commissionSen)}` : "—"} className="text-red-600" />
         )}
         <div className="flex justify-between border-t border-zinc-200 pt-2 text-lg font-bold dark:border-zinc-700">
-          <span>Bersih</span>
+          <span>Net</span>
           <span className="text-emerald-600">{b ? formatSen(b.netSen) : "—"}</span>
         </div>
-        {perKm !== null && <Row label="Bersih per km" value={`${formatSen(perKm)}/km`} className="font-semibold" />}
+        {perKm !== null && <Row label="Net per km" value={`${formatSen(perKm)}/km`} className="font-semibold" />}
       </div>
 
-      <input value={note} onChange={(e) => setNote(e.target.value)} maxLength={200} placeholder="Nota (pilihan) — cth lokasi, jarak"
+      <input value={note} onChange={(e) => setNote(e.target.value)} maxLength={200} placeholder="Note (optional) — e.g. location"
         className="mt-3 w-full rounded-xl border border-zinc-300 bg-transparent px-4 py-2 text-sm dark:border-zinc-700" />
 
       <div className="mt-4 grid grid-cols-2 gap-3">
@@ -96,7 +96,7 @@ export function OrderForm() {
         </button>
         <button type="button" disabled={!valid || pending} onClick={() => submit("accepted")}
           className="rounded-xl bg-emerald-600 py-4 text-lg font-bold text-white disabled:opacity-40">
-          {pending ? "Menyimpan…" : "Accept"}
+          {pending ? "Saving…" : "Accept"}
         </button>
       </div>
 

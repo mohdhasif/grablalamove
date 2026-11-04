@@ -15,7 +15,7 @@ export default async function History({
   const sp = await searchParams;
   const range: Range = sp.range && sp.range in RANGE_LABEL ? (sp.range as Range) : "week";
   const platform = sp.platform && sp.platform in PLATFORM_LABEL ? (sp.platform as Platform) : undefined;
-  // Kos tidak terikat pada platform, jadi hanya dikira bila "Semua platform".
+  // Expenses are not tied to a platform, so they only count under "All platforms".
   const [orders, expenses] = await Promise.all([
     listOrders(range, platform),
     platform ? Promise.resolve([]) : listExpenses(range),
@@ -34,19 +34,19 @@ export default async function History({
         ))}
       </div>
       <div className="flex flex-wrap gap-2">
-        <Link href={href(range)} className={chip(!platform)}>Semua platform</Link>
+        <Link href={href(range)} className={chip(!platform)}>All platforms</Link>
         {(Object.keys(PLATFORM_LABEL) as Platform[]).map((p) => (
           <Link key={p} href={href(range, p)} className={chip(p === platform)}>{PLATFORM_LABEL[p]}</Link>
         ))}
       </div>
       <Summary s={summarize(orders, expenses)} title={RANGE_LABEL[range]} />
       <section>
-        <h2 className="mb-1 text-sm font-semibold text-zinc-500">Order</h2>
+        <h2 className="mb-1 text-sm font-semibold text-zinc-500">Orders</h2>
         <OrderList orders={orders} />
       </section>
       {!platform && (
         <section>
-          <h2 className="mb-1 text-sm font-semibold text-zinc-500">Kos</h2>
+          <h2 className="mb-1 text-sm font-semibold text-zinc-500">Expenses</h2>
           <ExpenseList expenses={expenses} />
         </section>
       )}
