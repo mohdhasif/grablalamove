@@ -2,7 +2,7 @@
 
 import { useTransition } from "react";
 import { deleteOrder } from "@/app/actions";
-import { PLATFORM_LABEL, formatSen } from "@/lib/money";
+import { PLATFORM_LABEL, formatSen, senPerKm } from "@/lib/money";
 import type { Order } from "@/lib/orders";
 import { formatTime } from "@/lib/time";
 
@@ -25,6 +25,7 @@ export function OrderList({ orders }: { orders: Order[] }) {
             </div>
             <div className="truncate text-xs text-zinc-500">
               {formatTime(o.createdAt)}
+              {o.kmTenths && ` · ${(o.kmTenths / 10).toFixed(1)} km (${formatSen(senPerKm(o.netSen, o.kmTenths)!)}/km)`}
               {o.commissionSen > 0 && ` · kasar ${formatSen(o.grossSen)} − ${o.ratePct}%`}
               {o.note && ` · ${o.note}`}
             </div>

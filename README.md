@@ -10,23 +10,17 @@ Next.js 16 (Vercel) + Supabase (Postgres + Auth). Mobile-first — boleh "Add to
   - **Lalamove**: bersih = amaun − **21%**
 - Butang **Accept** / **Reject** — dua-dua direkod (reject tak dikira dalam pendapatan, tapi dikira dalam *accept rate*)
 - Ringkasan hari ini (bersih, ikut platform, accept rate, jumlah potongan)
+- Isi **jarak (km)** (pilihan) untuk dapat **RM/km**, jadi nampak terus sama ada order tu berbaloi sebelum tekan Accept/Reject
+- Rekod **kos** (minyak, tol, parking, servis, lain-lain), dan ringkasan tunjuk **untung = pendapatan bersih − kos**
 - Halaman **Sejarah**: tapis Hari ini / Minggu ini / Bulan ini / Semua, ikut platform, padam rekod salah
 
-## Setup (± 10 minit)
+## Setup
 
-1. **Supabase** → buat projek baru (region **Singapore** paling dekat dengan MY).
-2. Supabase → **SQL Editor** → paste & run [`supabase/migrations/0001_init.sql`](supabase/migrations/0001_init.sql).
-3. Supabase → **Authentication → Sign In / Providers → Email**: untuk guna sendiri, boleh off *Confirm email*.
-4. Salin `.env.example` → `.env.local`, isi dari Supabase → **Project Settings → API Keys**.
-5. Jalankan:
-   ```bash
-   npm install
-   npm run dev
-   ```
-6. **Vercel** → Import repo ini → tambah env var yang sama (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`) → Deploy.
-   (Atau guna integrasi Supabase dalam Vercel Marketplace — ia set env secara automatik.)
-7. Supabase → **Authentication → URL Configuration** → set *Site URL* ke domain Vercel anda.
-8. Daftar akaun anda, kemudian **off "Allow new users to sign up"** supaya orang lain tak boleh daftar.
+📘 Panduan langkah demi langkah: **[docs/SETUP.md](docs/SETUP.md)** (Supabase + Vercel, ± 15 minit).
+
+Ringkasnya: buat projek Supabase (Singapore), run `supabase/migrations/0001_init.sql` kemudian `0002_distance_expenses.sql`,
+import repo ke Vercel dengan env `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`,
+set Site URL di Supabase, daftar, kemudian off signup.
 
 ## Keputusan reka bentuk
 
@@ -42,8 +36,8 @@ Next.js 16 (Vercel) + Supabase (Postgres + Auth). Mobile-first — boleh "Add to
 
 ## Cadangan fasa seterusnya
 
-- **Kos minyak / tol / parking** → kira untung sebenar (bukan sekadar pendapatan)
-- **Jarak (km)** per order → metrik **RM/km** & **RM/jam** — cara paling tepat nak tahu order mana patut accept
+- **RM/jam**: butang Mula/Tamat shift supaya tahu pendapatan sejam sebenar
+- **Sasaran RM/km minimum**: warna merah/hijau automatik masa key in
 - **Tips & insentif/bonus** sebagai jenis rekod berasingan
 - **Sasaran harian** (progress bar) & graf mingguan
 - **Export CSV** untuk LHDN / akaun

@@ -1,9 +1,10 @@
 import Link from "next/link";
+import { ExpenseList } from "@/components/ExpenseList";
 import { Nav } from "@/components/Nav";
 import { OrderList } from "@/components/OrderList";
 import { Summary } from "@/components/Summary";
 import { PLATFORM_LABEL, type Platform } from "@/lib/money";
-import { listOrders, summarize } from "@/lib/orders";
+import { listExpenses, listOrders, summarize } from "@/lib/orders";
 import { RANGE_LABEL, type Range } from "@/lib/time";
 
 export default async function History({
@@ -14,7 +15,11 @@ export default async function History({
   const sp = await searchParams;
   const range: Range = sp.range && sp.range in RANGE_LABEL ? (sp.range as Range) : "week";
   const platform = sp.platform && sp.platform in PLATFORM_LABEL ? (sp.platform as Platform) : undefined;
-  const orders = await listOrders(range, platform);
+  // Kos tidak terikat pada platform, jadi hanya dikira bila "Semua platform".
+  const [orders, expenses] = await Promise.all([
+    listOrders(range, platform),
+    platform ? Promise.resolve([]) : listExpenses(range),
+  ]);
 
   const href = (r: Range, p?: Platform) => `/history?range=${r}${p ? `&platform=${p}` : ""}`;
   const chip = (active: boolean) =>
@@ -34,8 +39,17 @@ export default async function History({
           <Link key={p} href={href(range, p)} className={chip(p === platform)}>{PLATFORM_LABEL[p]}</Link>
         ))}
       </div>
-      <Summary s={summarize(orders)} title={RANGE_LABEL[range]} />
-      <OrderList orders={orders} />
+      <Summary s={summarize(orders, expenses)} title={RANGE_LABEL[range]} />
+      <section>
+        <h2 className="mb-1 text-sm font-semibold text-zinc-500">Order</h2>
+        <OrderList orders={orders} />
+      </section>
+      {!platform && (
+        <section>
+          <h2 className="mb-1 text-sm font-semibold text-zinc-500">Kos</h2>
+          <ExpenseList expenses={expenses} />
+        </section>
+      )}
     </main>
   );
 }

@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { dbToSen, type OrderStatus, type Platform } from "@/lib/money";
+import { dbToSen, senPerKm, type ExpenseCategory, type OrderStatus, type Platform } from "@/lib/money";
 import { rangeStart, type Range } from "@/lib/time";
 
 export type Order = {
@@ -9,16 +9,26 @@ export type Order = {
   commissionSen: number;
   netSen: number;
   ratePct: number;
+  /** jarak dalam 0.1 km, null jika tidak diisi */
+  kmTenths: number | null;
   status: OrderStatus;
   note: string | null;
   createdAt: string;
+};
+
+export type Expense = {
+  id: string;
+  category: ExpenseCategory;
+  amountSen: number;
+  note: string | null;
+  spentAt: string;
 };
 
 export async function listOrders(range: Range, platform?: Platform, limit = 500): Promise<Order[]> {
   const supabase = await createClient();
   let q = supabase
     .from("orders")
-    .select("id, platform, gross_amount, commission_amount, net_amount, commission_rate, status, note, created_at")
+    .select("id, platform, gross_amount, commission_amount, net_amount, commission_rate, distance_km, status, note, created_at")
     .order("created_at", { ascending: false })
     .limit(limit);
   const start = rangeStart(range);
@@ -33,13 +43,34 @@ export async function listOrders(range: Range, platform?: Platform, limit = 500)
     commissionSen: dbToSen(r.commission_amount),
     netSen: dbToSen(r.net_amount),
     ratePct: Number(r.commission_rate) * 100,
+    kmTenths: r.distance_km === null ? null : Math.round(Number(r.distance_km) * 10),
     status: r.status,
     note: r.note,
     createdAt: r.created_at,
   }));
 }
 
-export function summarize(orders: Order[]) {
+export async function listExpenses(range: Range, limit = 500): Promise<Expense[]> {
+  const supabase = await createClient();
+  let q = supabase
+    .from("expenses")
+    .select("id, category, amount, note, spent_at")
+    .order("spent_at", { ascending: false })
+    .limit(limit);
+  const start = rangeStart(range);
+  if (start) q = q.gte("spent_at", start);
+  const { data, error } = await q;
+  if (error) throw new Error(error.message);
+  return (data ?? []).map((r) => ({
+    id: r.id,
+    category: r.category,
+    amountSen: dbToSen(r.amount),
+    note: r.note,
+    spentAt: r.spent_at,
+  }));
+}
+
+export function summarize(orders: Order[], expenses: Expense[] = []) {
   const accepted = orders.filter((o) => o.status === "accepted");
   const rejected = orders.filter((o) => o.status === "rejected");
   const sum = (xs: Order[], k: "grossSen" | "netSen" | "commissionSen") => xs.reduce((a, o) => a + o[k], 0);
@@ -47,13 +78,21 @@ export function summarize(orders: Order[]) {
     const xs = accepted.filter((o) => o.platform === p);
     return { count: xs.length, netSen: sum(xs, "netSen") };
   };
+  // RM/km hanya dari order yang ada jarak, supaya tak tercemar order tanpa km.
+  const withKm = accepted.filter((o) => o.kmTenths);
+  const kmTenths = withKm.reduce((a, o) => a + (o.kmTenths ?? 0), 0);
+  const netSen = sum(accepted, "netSen");
+  const expenseSen = expenses.reduce((a, e) => a + e.amountSen, 0);
   return {
-    netSen: sum(accepted, "netSen"),
+    netSen,
     grossSen: sum(accepted, "grossSen"),
     commissionSen: sum(accepted, "commissionSen"),
+    expenseSen,
+    profitSen: netSen - expenseSen,
+    kmTenths,
+    senPerKm: senPerKm(sum(withKm, "netSen"), kmTenths),
     acceptedCount: accepted.length,
     rejectedCount: rejected.length,
-    rejectedNetSen: sum(rejected, "netSen"),
     acceptRate: orders.length ? Math.round((accepted.length / orders.length) * 100) : null,
     grab: byPlatform("grab"),
     lalamove: byPlatform("lalamove"),

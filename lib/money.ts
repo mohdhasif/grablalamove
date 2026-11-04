@@ -54,3 +54,28 @@ export function senToDb(sen: number): string {
 export function bpsToRate(bps: number): string {
   return (bps / 10000).toFixed(4);
 }
+
+export type ExpenseCategory = "fuel" | "toll" | "parking" | "maintenance" | "other";
+
+export const EXPENSE_LABEL: Record<ExpenseCategory, string> = {
+  fuel: "⛽ Minyak",
+  toll: "🛣️ Tol",
+  parking: "🅿️ Parking",
+  maintenance: "🔧 Servis",
+  other: "📦 Lain-lain",
+};
+
+/** "12.5" / "12,5" -> 125 (dalam 0.1 km). Kosong -> undefined, tidak sah -> null. */
+export function parseKmTenths(input: string): number | null | undefined {
+  const cleaned = input.replace(/km/i, "").replace(/\s/g, "").replace(",", ".");
+  if (cleaned === "") return undefined;
+  if (!/^\d{1,3}(\.\d?)?$/.test(cleaned)) return null;
+  const [whole, frac = ""] = cleaned.split(".");
+  const tenths = Number(whole) * 10 + Number(frac || "0");
+  return tenths > 0 ? tenths : null;
+}
+
+/** RM per km dalam sen (dibundarkan), atau null jika tiada jarak. */
+export function senPerKm(netSen: number, kmTenths: number): number | null {
+  return kmTenths > 0 ? Math.round((netSen * 10) / kmTenths) : null;
+}
