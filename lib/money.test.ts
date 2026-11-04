@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { calcBreakdown, parseToSen, formatSen, parseKmTenths, senPerKm } from "./money.ts";
+import { calcBreakdown, parseToSen, parseOptionalSen, formatSen, parseKmTenths, senPerKm } from "./money.ts";
 
 test("parseToSen", () => {
   assert.equal(parseToSen("12"), 1200);
@@ -15,7 +15,7 @@ test("parseToSen", () => {
 
 test("lalamove deducts 21%", () => {
   assert.deepEqual(calcBreakdown(5000, "lalamove"), {
-    grossSen: 5000, commissionSen: 1050, netSen: 3950, ratePct: 21,
+    grossSen: 5000, commissionSen: 1050, extraSen: 0, netSen: 3950, ratePct: 21,
   });
   // 12.34 * 0.21 = 2.5914 -> 2.59 ; net 9.75
   assert.equal(calcBreakdown(1234, "lalamove").netSen, 975);
@@ -46,4 +46,17 @@ test("senPerKm", () => {
   // RM39.50 / 12.5km = RM3.16/km
   assert.equal(senPerKm(3950, 125), 316);
   assert.equal(senPerKm(1000, 0), null);
+});
+
+test("grab fare + optional extra", () => {
+  // fare RM15.00 + extra RM3.50 = RM18.50
+  assert.equal(calcBreakdown(1500, "grab", 350).netSen, 1850);
+  assert.equal(calcBreakdown(1500, "grab").netSen, 1500);
+});
+
+test("parseOptionalSen", () => {
+  assert.equal(parseOptionalSen(""), 0);
+  assert.equal(parseOptionalSen("  "), 0);
+  assert.equal(parseOptionalSen("3.5"), 350);
+  assert.equal(parseOptionalSen("abc"), null);
 });

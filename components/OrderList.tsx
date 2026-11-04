@@ -29,6 +29,7 @@ export function OrderList({ orders }: { orders: Order[] }) {
             <div className="truncate text-xs text-zinc-500">
               {formatTime(o.createdAt)}
               {o.kmTenths && ` · ${(o.kmTenths / 10).toFixed(1)} km (${formatSen(senPerKm(o.netSen, o.kmTenths)!)}/km)`}
+              {o.extraSen > 0 && ` · fare ${formatSen(o.grossSen)} + extra ${formatSen(o.extraSen)}`}
               {o.commissionSen > 0 && ` · gross ${formatSen(o.grossSen)} − ${o.ratePct}%`}
               {o.note && ` · ${o.note}`}
             </div>

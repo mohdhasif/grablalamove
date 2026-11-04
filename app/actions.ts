@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import {
-  COMMISSION_BPS, EXPENSE_LABEL, bpsToRate, parseKmTenths, parseToSen, senToDb,
+  COMMISSION_BPS, EXPENSE_LABEL, EXTRA_PLATFORMS, bpsToRate, parseKmTenths, parseOptionalSen, parseToSen, senToDb,
   type ExpenseCategory, type OrderStatus, type Platform,
 } from "@/lib/money";
 
@@ -19,6 +19,7 @@ const cleanNote = (note?: string) => note?.trim().slice(0, 200) || null;
 export async function recordOrder(input: {
   platform: Platform;
   amount: string;
+  extraAmount?: string;
   status: OrderStatus;
   distanceKm?: string;
   note?: string;
@@ -27,6 +28,11 @@ export async function recordOrder(input: {
   if (input.status !== "accepted" && input.status !== "rejected") return { ok: false, error: "Invalid status" };
   const sen = parseToSen(input.amount);
   if (sen === null) return { ok: false, error: "Invalid amount" };
+  const extraSen = parseOptionalSen(input.extraAmount ?? "");
+  if (extraSen === null) return { ok: false, error: "Invalid extra amount" };
+  if (extraSen > 0 && !EXTRA_PLATFORMS.includes(input.platform)) {
+    return { ok: false, error: "Extra amount is not available for this platform" };
+  }
   const km = parseKmTenths(input.distanceKm ?? "");
   if (km === null) return { ok: false, error: "Invalid distance" };
 
@@ -35,6 +41,7 @@ export async function recordOrder(input: {
   const { error } = await supabase.from("orders").insert({
     platform: input.platform,
     gross_amount: senToDb(sen),
+    extra_amount: senToDb(extraSen),
     commission_rate: bpsToRate(COMMISSION_BPS[input.platform]),
     distance_km: km === undefined ? null : (km / 10).toFixed(1),
     status: input.status,

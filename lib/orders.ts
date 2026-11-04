@@ -7,6 +7,7 @@ export type Order = {
   platform: Platform;
   grossSen: number;
   commissionSen: number;
+  extraSen: number;
   netSen: number;
   ratePct: number;
   /** distance in 0.1 km units, null when not entered */
@@ -28,7 +29,7 @@ export async function listOrders(range: Range, platform?: Platform, limit = 500)
   const supabase = await createClient();
   let q = supabase
     .from("orders")
-    .select("id, platform, gross_amount, commission_amount, net_amount, commission_rate, distance_km, status, note, created_at")
+    .select("id, platform, gross_amount, commission_amount, extra_amount, net_amount, commission_rate, distance_km, status, note, created_at")
     .order("created_at", { ascending: false })
     .limit(limit);
   const start = rangeStart(range);
@@ -41,6 +42,7 @@ export async function listOrders(range: Range, platform?: Platform, limit = 500)
     platform: r.platform,
     grossSen: dbToSen(r.gross_amount),
     commissionSen: dbToSen(r.commission_amount),
+    extraSen: dbToSen(r.extra_amount),
     netSen: dbToSen(r.net_amount),
     ratePct: Number(r.commission_rate) * 100,
     kmTenths: r.distance_km === null ? null : Math.round(Number(r.distance_km) * 10),
@@ -73,7 +75,7 @@ export async function listExpenses(range: Range, limit = 500): Promise<Expense[]
 export function summarize(orders: Order[], expenses: Expense[] = []) {
   const accepted = orders.filter((o) => o.status === "accepted");
   const rejected = orders.filter((o) => o.status === "rejected");
-  const sum = (xs: Order[], k: "grossSen" | "netSen" | "commissionSen") => xs.reduce((a, o) => a + o[k], 0);
+  const sum = (xs: Order[], k: "grossSen" | "netSen" | "commissionSen" | "extraSen") => xs.reduce((a, o) => a + o[k], 0);
   const byPlatform = (p: Platform) => {
     const xs = accepted.filter((o) => o.platform === p);
     return { count: xs.length, netSen: sum(xs, "netSen") };
@@ -87,6 +89,7 @@ export function summarize(orders: Order[], expenses: Expense[] = []) {
     netSen,
     grossSen: sum(accepted, "grossSen"),
     commissionSen: sum(accepted, "commissionSen"),
+    extraSen: sum(accepted, "extraSen"),
     expenseSen,
     profitSen: netSen - expenseSen,
     kmTenths,

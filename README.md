@@ -6,7 +6,7 @@ Next.js 16 (Vercel) + Supabase (Postgres + Auth). Mobile-first — supports "Add
 ## Features
 
 - Pick a platform → enter the amount → see **Amount / Commission / Net** live
-  - **Grab**: net = the amount you enter
+  - **Grab**: net = order fare + optional **extra money** (tips/incentives)
   - **Lalamove**: net = amount − **21%**
 - **Accept** / **Reject** buttons — both are recorded (rejects don't count toward earnings, but do count toward *accept rate*)
 - Optional **distance (km)** gives you **RM/km**, so you can see whether an order is worth it before tapping Accept/Reject
@@ -18,7 +18,7 @@ Next.js 16 (Vercel) + Supabase (Postgres + Auth). Mobile-first — supports "Add
 
 📘 Step-by-step guide: **[docs/SETUP.md](docs/SETUP.md)** (Supabase + Vercel, ~15 minutes).
 
-In short: create a Supabase project (Singapore), run `supabase/migrations/0001_init.sql` then `0002_distance_expenses.sql`,
+In short: create a Supabase project (Singapore), run `supabase/migrations/0001_init.sql`, `0002_distance_expenses.sql`, then `0003_extra_amount.sql`,
 import this repo into Vercel with `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`,
 set the Site URL in Supabase, sign up, then disable sign-ups.
 

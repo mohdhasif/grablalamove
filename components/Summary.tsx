@@ -10,6 +10,7 @@ export function Summary({ s, title }: { s: ReturnType<typeof summarize>; title: 
       </p>
       <p className="mt-1 text-xs opacity-70 tabular-nums">
         Net earnings {formatSen(s.netSen)} − expenses {formatSen(s.expenseSen)}
+        {s.extraSen > 0 && ` · incl. extra ${formatSen(s.extraSen)}`}
         {s.commissionSen > 0 && ` · Lalamove commission ${formatSen(s.commissionSen)}`}
       </p>
       <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
