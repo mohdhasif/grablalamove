@@ -5,6 +5,7 @@ import { deleteOrder } from "@/app/actions";
 import { PLATFORM_LABEL, formatSen, senPerKm } from "@/lib/money";
 import type { Order } from "@/lib/orders";
 import { formatTime } from "@/lib/time";
+import { LoadingOverlay } from "./LoadingOverlay";
 
 export function OrderList({ orders }: { orders: Order[] }) {
   const [pending, startTransition] = useTransition();
@@ -12,6 +13,8 @@ export function OrderList({ orders }: { orders: Order[] }) {
   if (!orders.length) return <p className="py-6 text-center text-sm text-zinc-500">No orders yet.</p>;
 
   return (
+    <>
+    <LoadingOverlay show={pending} label="Deleting order…" />
     <ul className="divide-y divide-zinc-200 dark:divide-zinc-800">
       {orders.map((o) => (
         <li key={o.id} className={`flex items-center gap-3 py-3 ${o.status === "rejected" ? "opacity-50" : ""}`}>
@@ -38,5 +41,6 @@ export function OrderList({ orders }: { orders: Order[] }) {
         </li>
       ))}
     </ul>
+    </>
   );
 }

@@ -1,14 +1,15 @@
-import Link from "next/link";
 import { signOut } from "@/app/login/actions";
+import { PendingLink } from "./PendingLink";
+import { SignOutButton } from "./SignOutButton";
 
 export function Nav() {
   return (
     <header className="flex items-center justify-between">
-      <Link href="/" className="text-lg font-bold">GrabLalaMove</Link>
+      <PendingLink href="/" className="text-lg font-bold">GrabLalaMove</PendingLink>
       <nav className="flex items-center gap-4 text-sm">
-        <Link href="/history" className="text-zinc-600 dark:text-zinc-300">History</Link>
+        <PendingLink href="/history" className="text-zinc-600 dark:text-zinc-300">History</PendingLink>
         <form action={signOut}>
-          <button className="text-zinc-400">Sign out</button>
+          <SignOutButton />
         </form>
       </nav>
     </header>

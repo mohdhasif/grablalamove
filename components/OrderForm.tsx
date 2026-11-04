@@ -2,6 +2,7 @@
 
 import { useRef, useState, useTransition } from "react";
 import { recordOrder } from "@/app/actions";
+import { LoadingOverlay } from "./LoadingOverlay";
 import {
   PLATFORM_LABEL, calcBreakdown, formatSen, parseKmTenths, parseToSen, senPerKm,
   type OrderStatus, type Platform,
@@ -19,6 +20,7 @@ export function OrderForm() {
   const [km, setKm] = useState("");
   const [flash, setFlash] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
   const [pending, startTransition] = useTransition();
+  const [busyLabel, setBusyLabel] = useState("Saving…");
   const inputRef = useRef<HTMLInputElement>(null);
 
   const sen = parseToSen(amount);
@@ -29,6 +31,7 @@ export function OrderForm() {
 
   function submit(status: OrderStatus) {
     if (!b || kmTenths === null) return;
+    setBusyLabel(status === "accepted" ? "Accepting order…" : "Rejecting order…");
     startTransition(async () => {
       const res = await recordOrder({ platform, amount, status, distanceKm: km, note });
       if (res.ok) {
@@ -99,6 +102,8 @@ export function OrderForm() {
           {pending ? "Saving…" : "Accept"}
         </button>
       </div>
+
+      <LoadingOverlay show={pending} label={busyLabel} />
 
       {flash && (
         <p className={`mt-3 text-center text-sm font-medium ${flash.kind === "ok" ? "text-emerald-700" : "text-red-600"}`}>

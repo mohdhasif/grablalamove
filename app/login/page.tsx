@@ -1,4 +1,4 @@
-import { signIn, signUp } from "./actions";
+import { AuthButtons } from "@/components/AuthButtons";
 
 export default async function LoginPage({
   searchParams,
@@ -20,12 +20,7 @@ export default async function LoginPage({
         <input name="password" type="password" required minLength={8} placeholder="Password"
           autoComplete="current-password"
           className="rounded-xl border border-zinc-300 bg-white px-4 py-3 dark:border-zinc-700 dark:bg-zinc-900" />
-        <button formAction={signIn} className="rounded-xl bg-zinc-900 py-3 font-semibold text-white dark:bg-white dark:text-zinc-900">
-          Sign in
-        </button>
-        <button formAction={signUp} className="rounded-xl border border-zinc-300 py-3 font-semibold dark:border-zinc-700">
-          Create new account
-        </button>
+        <AuthButtons />
       </form>
     </main>
   );
