@@ -23,15 +23,15 @@ export async function recordOrder(input: {
   distanceKm?: string;
   note?: string;
 }): Promise<ActionResult> {
-  if (!(input.platform in COMMISSION_BPS)) return { ok: false, error: "Platform tidak sah" };
-  if (input.status !== "accepted" && input.status !== "rejected") return { ok: false, error: "Status tidak sah" };
+  if (!(input.platform in COMMISSION_BPS)) return { ok: false, error: "Invalid platform" };
+  if (input.status !== "accepted" && input.status !== "rejected") return { ok: false, error: "Invalid status" };
   const sen = parseToSen(input.amount);
-  if (sen === null) return { ok: false, error: "Amaun tidak sah" };
+  if (sen === null) return { ok: false, error: "Invalid amount" };
   const km = parseKmTenths(input.distanceKm ?? "");
-  if (km === null) return { ok: false, error: "Jarak tidak sah" };
+  if (km === null) return { ok: false, error: "Invalid distance" };
 
   const supabase = await createClient();
-  // Kadar diambil dari server, bukan dari client — elak manipulasi.
+  // The rate comes from the server, never the client, to prevent tampering.
   const { error } = await supabase.from("orders").insert({
     platform: input.platform,
     gross_amount: senToDb(sen),
@@ -58,9 +58,9 @@ export async function recordExpense(input: {
   amount: string;
   note?: string;
 }): Promise<ActionResult> {
-  if (!(input.category in EXPENSE_LABEL)) return { ok: false, error: "Kategori tidak sah" };
+  if (!(input.category in EXPENSE_LABEL)) return { ok: false, error: "Invalid category" };
   const sen = parseToSen(input.amount);
-  if (sen === null) return { ok: false, error: "Amaun tidak sah" };
+  if (sen === null) return { ok: false, error: "Invalid amount" };
   const supabase = await createClient();
   const { error } = await supabase.from("expenses").insert({
     category: input.category,

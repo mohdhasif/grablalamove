@@ -1,45 +1,46 @@
 # GrabLalaMove
 
-Sistem key-in pendapatan setiap order **Grab** dan **Lalamove** (RM).
-Next.js 16 (Vercel) + Supabase (Postgres + Auth). Mobile-first — boleh "Add to Home Screen".
+Log your earnings for every **Grab** and **Lalamove** order (MYR).
+Next.js 16 (Vercel) + Supabase (Postgres + Auth). Mobile-first — supports "Add to Home Screen".
 
-## Fungsi
+## Features
 
-- Pilih platform → key in amaun → nampak **Jumlah / Potongan / Bersih** secara live
-  - **Grab**: bersih = amaun yang di-key in
-  - **Lalamove**: bersih = amaun − **21%**
-- Butang **Accept** / **Reject** — dua-dua direkod (reject tak dikira dalam pendapatan, tapi dikira dalam *accept rate*)
-- Ringkasan hari ini (bersih, ikut platform, accept rate, jumlah potongan)
-- Isi **jarak (km)** (pilihan) untuk dapat **RM/km**, jadi nampak terus sama ada order tu berbaloi sebelum tekan Accept/Reject
-- Rekod **kos** (minyak, tol, parking, servis, lain-lain), dan ringkasan tunjuk **untung = pendapatan bersih − kos**
-- Halaman **Sejarah**: tapis Hari ini / Minggu ini / Bulan ini / Semua, ikut platform, padam rekod salah
+- Pick a platform → enter the amount → see **Amount / Commission / Net** live
+  - **Grab**: net = the amount you enter
+  - **Lalamove**: net = amount − **21%**
+- **Accept** / **Reject** buttons — both are recorded (rejects don't count toward earnings, but do count toward *accept rate*)
+- Optional **distance (km)** gives you **RM/km**, so you can see whether an order is worth it before tapping Accept/Reject
+- Log **expenses** (fuel, toll, parking, service, other) — the summary shows **profit = net earnings − expenses**
+- Today's summary (profit, per platform, RM/km, accept rate, Lalamove commission)
+- **History** page: filter by Today / This week / This month / All time and by platform; delete wrong entries
 
 ## Setup
 
-📘 Panduan langkah demi langkah: **[docs/SETUP.md](docs/SETUP.md)** (Supabase + Vercel, ± 15 minit).
+📘 Step-by-step guide: **[docs/SETUP.md](docs/SETUP.md)** (Supabase + Vercel, ~15 minutes).
 
-Ringkasnya: buat projek Supabase (Singapore), run `supabase/migrations/0001_init.sql` kemudian `0002_distance_expenses.sql`,
-import repo ke Vercel dengan env `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`,
-set Site URL di Supabase, daftar, kemudian off signup.
+In short: create a Supabase project (Singapore), run `supabase/migrations/0001_init.sql` then `0002_distance_expenses.sql`,
+import this repo into Vercel with `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`,
+set the Site URL in Supabase, sign up, then disable sign-ups.
 
-## Keputusan reka bentuk
+## Design decisions
 
-| Keputusan | Sebab |
+| Decision | Why |
 |---|---|
-| Kadar potongan disimpan **per order** (`commission_rate`) | Kalau Lalamove tukar kadar (cth 21% → 20%), sejarah lama kekal tepat. Tukar kadar baru di `lib/money.ts` sahaja. |
-| `net_amount` = **generated column** dalam Postgres | Satu sumber kebenaran; laporan/SQL terus guna nilai sama. |
-| Kiraan dalam **sen (integer)** di UI | Elak ralat float (0.1 + 0.2). Logik sama dengan DB, ada unit test (`npm test`). |
-| Kadar ditentukan di **server action**, bukan client | Client tak boleh manipulasi kadar. |
-| **Row Level Security** | Walaupun key Supabase awam, setiap user hanya boleh akses rekod sendiri. |
-| Reject turut direkod | Data accept rate & "duit terlepas" berguna untuk tahu waktu/platform mana berbaloi. |
-| Zon masa **Asia/Kuala_Lumpur** | "Hari ini" ikut jam Malaysia, bukan UTC. |
+| Commission rate stored **per order** (`commission_rate`) | If Lalamove changes its rate (e.g. 21% → 20%), past records stay accurate. Change the new rate in `lib/money.ts` only. |
+| `net_amount` is a **generated column** in Postgres | Single source of truth; reports and SQL use the same value. |
+| Money math in **sen (integers)** in the UI | Avoids float errors (0.1 + 0.2). Same logic as the DB, covered by unit tests (`npm test`). |
+| Rate decided in the **server action**, not the client | The client can't tamper with the rate. |
+| **Row Level Security** | Even though the Supabase key is public, each user can only access their own rows. |
+| Rejects are recorded too | Accept rate and "money left on the table" show which times/platforms are worth it. |
+| **Asia/Kuala_Lumpur** time zone | "Today" follows Malaysian time, not UTC. |
+| Friendly `/setup` page | Missing or malformed Supabase env vars show what's wrong instead of a blank 500. |
 
-## Cadangan fasa seterusnya
+## Next phase ideas
 
-- **RM/jam**: butang Mula/Tamat shift supaya tahu pendapatan sejam sebenar
-- **Sasaran RM/km minimum**: warna merah/hijau automatik masa key in
-- **Tips & insentif/bonus** sebagai jenis rekod berasingan
-- **Sasaran harian** (progress bar) & graf mingguan
-- **Export CSV** untuk LHDN / akaun
-- Kadar potongan boleh ubah dari UI (jadual `platform_rates` dengan `effective_from`)
-- Mod offline (PWA + queue) untuk kawasan line lemah
+- **RM/hour**: Start/End shift buttons to measure real hourly earnings
+- **Minimum RM/km target**: automatic red/green colour while keying in
+- **Tips & incentives/bonuses** as a separate record type
+- **Daily target** (progress bar) & weekly charts
+- **CSV export** for tax filing / bookkeeping
+- Editable commission rates from the UI (`platform_rates` table with `effective_from`)
+- Offline mode (PWA + queue) for areas with weak signal

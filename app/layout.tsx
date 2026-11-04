@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "GrabLalaMove",
-  description: "Rekod pendapatan order Grab & Lalamove",
+  description: "Track earnings for every Grab & Lalamove order",
   appleWebApp: { capable: true, title: "GrabLalaMove", statusBarStyle: "default" },
 };
 
@@ -15,7 +15,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ms">
+    <html lang="en">
       <body>{children}</body>
     </html>
   );

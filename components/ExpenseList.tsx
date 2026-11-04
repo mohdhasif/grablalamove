@@ -8,7 +8,7 @@ import { formatTime } from "@/lib/time";
 
 export function ExpenseList({ expenses }: { expenses: Expense[] }) {
   const [pending, startTransition] = useTransition();
-  if (!expenses.length) return <p className="py-4 text-center text-sm text-zinc-500">Tiada kos direkod.</p>;
+  if (!expenses.length) return <p className="py-4 text-center text-sm text-zinc-500">No expenses recorded.</p>;
   return (
     <ul className="divide-y divide-zinc-200 dark:divide-zinc-800">
       {expenses.map((e) => (
@@ -21,8 +21,8 @@ export function ExpenseList({ expenses }: { expenses: Expense[] }) {
               {e.note && ` · ${e.note}`}
             </div>
           </div>
-          <button type="button" disabled={pending} aria-label="Padam"
-            onClick={() => confirm("Padam kos ini?") && startTransition(async () => { await deleteExpense(e.id); })}
+          <button type="button" disabled={pending} aria-label="Delete"
+            onClick={() => confirm("Delete this expense?") && startTransition(async () => { await deleteExpense(e.id); })}
             className="rounded-lg px-2 py-1 text-zinc-400 hover:bg-zinc-100 hover:text-red-600 dark:hover:bg-zinc-800">
             ✕
           </button>

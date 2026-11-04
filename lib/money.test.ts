@@ -13,17 +13,17 @@ test("parseToSen", () => {
   assert.equal(parseToSen("-5"), null);
 });
 
-test("lalamove tolak 21%", () => {
+test("lalamove deducts 21%", () => {
   assert.deepEqual(calcBreakdown(5000, "lalamove"), {
     grossSen: 5000, commissionSen: 1050, netSen: 3950, ratePct: 21,
   });
-  // 12.34 * 0.21 = 2.5914 -> 2.59 ; bersih 9.75
+  // 12.34 * 0.21 = 2.5914 -> 2.59 ; net 9.75
   assert.equal(calcBreakdown(1234, "lalamove").netSen, 975);
-  // 0.50 * 0.21 = 0.105 -> 0.11 (separuh ke atas)
+  // 0.50 * 0.21 = 0.105 -> 0.11 (round half up)
   assert.equal(calcBreakdown(50, "lalamove").commissionSen, 11);
 });
 
-test("grab tiada potongan", () => {
+test("grab has no deduction", () => {
   assert.equal(calcBreakdown(2350, "grab").netSen, 2350);
 });
 

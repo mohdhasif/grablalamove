@@ -1,5 +1,5 @@
-// Semua akses Supabase berlaku di server (proxy + server actions + server components),
-// jadi env tanpa NEXT_PUBLIC_ juga boleh dibaca masa runtime.
+// All Supabase access happens on the server (proxy + server actions + server components),
+// so env vars without the NEXT_PUBLIC_ prefix can also be read at runtime.
 
 export type SupabaseEnv = { ok: true; url: string; key: string } | { ok: false; problems: string[] };
 
@@ -17,19 +17,19 @@ export function getSupabaseEnv(): SupabaseEnv {
 
   let url: string | undefined;
   if (!rawUrl) {
-    problems.push("NEXT_PUBLIC_SUPABASE_URL tiada.");
+    problems.push("NEXT_PUBLIC_SUPABASE_URL is missing.");
   } else {
-    // Buang tanda petik, "/rest/v1" dan "/" di hujung yang selalu ter-paste.
+    // Strip quotes, a trailing "/rest/v1" and trailing "/" that often get pasted in.
     url = rawUrl.replace(/^["']|["']$/g, "").replace(/\/rest\/v1\/?$/, "").replace(/\/+$/, "");
     if (!/^https?:\/\/[^/\s]+$/.test(url)) {
-      problems.push(`NEXT_PUBLIC_SUPABASE_URL tidak sah. Patut macam https://xxxx.supabase.co (sekarang bermula "${url.slice(0, 12)}…").`);
+      problems.push(`NEXT_PUBLIC_SUPABASE_URL is invalid. It should look like https://xxxx.supabase.co (currently starts with "${url.slice(0, 12)}…").`);
     }
   }
 
   if (!key) {
-    problems.push("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY (atau NEXT_PUBLIC_SUPABASE_ANON_KEY) tiada.");
+    problems.push("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY (or NEXT_PUBLIC_SUPABASE_ANON_KEY) is missing.");
   } else if (key.startsWith("sb_secret_")) {
-    problems.push("Anda letak SECRET key. Guna Publishable key (sb_publishable_…) sahaja.");
+    problems.push("You set a SECRET key. Use the Publishable key (sb_publishable_…) only.");
   }
 
   return problems.length || !url || !key ? { ok: false, problems } : { ok: true, url, key: key.replace(/^["']|["']$/g, "") };
@@ -37,6 +37,6 @@ export function getSupabaseEnv(): SupabaseEnv {
 
 export function requireSupabaseEnv() {
   const env = getSupabaseEnv();
-  if (!env.ok) throw new Error(`Konfigurasi Supabase salah: ${env.problems.join(" ")}`);
+  if (!env.ok) throw new Error(`Invalid Supabase configuration: ${env.problems.join(" ")}`);
   return env;
 }

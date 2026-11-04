@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-// Boleh "Add to Home Screen" di telefon — buka macam app.
+// Enables "Add to Home Screen" on phones so it opens like an app.
 export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "GrabLalaMove",

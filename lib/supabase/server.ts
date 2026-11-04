@@ -14,7 +14,7 @@ export async function createClient() {
         try {
           cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options));
         } catch {
-          // Dipanggil dari Server Component — proxy.ts akan refresh sesi.
+          // Called from a Server Component — proxy.ts refreshes the session.
         }
       },
     },
