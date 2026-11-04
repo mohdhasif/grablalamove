@@ -1,7 +1,7 @@
-import Link from "next/link";
 import { ExpenseList } from "@/components/ExpenseList";
 import { Nav } from "@/components/Nav";
 import { OrderList } from "@/components/OrderList";
+import { PendingLink } from "@/components/PendingLink";
 import { Summary } from "@/components/Summary";
 import { PLATFORM_LABEL, type Platform } from "@/lib/money";
 import { listExpenses, listOrders, summarize } from "@/lib/orders";
@@ -30,13 +30,13 @@ export default async function History({
       <Nav />
       <div className="flex flex-wrap gap-2">
         {(Object.keys(RANGE_LABEL) as Range[]).map((r) => (
-          <Link key={r} href={href(r, platform)} className={chip(r === range)}>{RANGE_LABEL[r]}</Link>
+          <PendingLink key={r} href={href(r, platform)} className={chip(r === range)}>{RANGE_LABEL[r]}</PendingLink>
         ))}
       </div>
       <div className="flex flex-wrap gap-2">
-        <Link href={href(range)} className={chip(!platform)}>All platforms</Link>
+        <PendingLink href={href(range)} className={chip(!platform)}>All platforms</PendingLink>
         {(Object.keys(PLATFORM_LABEL) as Platform[]).map((p) => (
-          <Link key={p} href={href(range, p)} className={chip(p === platform)}>{PLATFORM_LABEL[p]}</Link>
+          <PendingLink key={p} href={href(range, p)} className={chip(p === platform)}>{PLATFORM_LABEL[p]}</PendingLink>
         ))}
       </div>
       <Summary s={summarize(orders, expenses)} title={RANGE_LABEL[range]} />

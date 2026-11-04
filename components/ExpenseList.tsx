@@ -5,11 +5,14 @@ import { deleteExpense } from "@/app/actions";
 import { EXPENSE_LABEL, formatSen } from "@/lib/money";
 import type { Expense } from "@/lib/orders";
 import { formatTime } from "@/lib/time";
+import { LoadingOverlay } from "./LoadingOverlay";
 
 export function ExpenseList({ expenses }: { expenses: Expense[] }) {
   const [pending, startTransition] = useTransition();
   if (!expenses.length) return <p className="py-4 text-center text-sm text-zinc-500">No expenses recorded.</p>;
   return (
+    <>
+    <LoadingOverlay show={pending} label="Deleting expense…" />
     <ul className="divide-y divide-zinc-200 dark:divide-zinc-800">
       {expenses.map((e) => (
         <li key={e.id} className="flex items-center gap-3 py-3">
@@ -29,5 +32,6 @@ export function ExpenseList({ expenses }: { expenses: Expense[] }) {
         </li>
       ))}
     </ul>
+    </>
   );
 }

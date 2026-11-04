@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { recordExpense } from "@/app/actions";
+import { LoadingOverlay } from "./LoadingOverlay";
 import { EXPENSE_LABEL, formatSen, parseToSen, type ExpenseCategory } from "@/lib/money";
 
 export function ExpenseForm() {
@@ -59,6 +60,7 @@ export function ExpenseForm() {
         className="mt-3 w-full rounded-xl bg-zinc-900 py-3 font-bold text-white disabled:opacity-40 dark:bg-white dark:text-zinc-900">
         {pending ? "Saving…" : "Save expense"}
       </button>
+      <LoadingOverlay show={pending} label="Saving expense…" />
       {flash && (
         <p className={`mt-2 text-center text-sm ${flash.kind === "ok" ? "text-emerald-700" : "text-red-600"}`}>{flash.text}</p>
       )}
